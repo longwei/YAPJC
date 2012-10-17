@@ -1,0 +1,530 @@
+package cs665;
+
+import java_cup.runtime.*;
+
+parser code {:
+
+	/* 
+	 * grammar:
+	 *
+	 * stmtList ::= stmt |  stmtList stmt ;
+	 * stmt ::= printStmt | declStmt | assignStmt | ifStmt | whileStmt | funcDeclStmt | CallStmt;
+	 * funcDeclStmt ::= type Ident "(" ")" "{" stmtList "}";
+	 * callExpr ::= Ident "(" ")"
+	 * callStmt ::= callExpr ";"
+	 * returnStmt :: return ";"| return expr ";" ;
+	 * printStmt ::= "print" expr ";" ;
+	 * assignStmt :: = vblRef "=" expr ";" | ; 
+	 * declStmt  ::= type vblRef ";" | type vblRef "=" expr ";" | FINAL declStmt;
+	 * ifThenStmt ::= if "(" expr ")" "{" stmtList "}" ;
+	 * whileThenStmt ::= while "(" expr ")" "{" stmtList "}" ;
+	 * boolExpr ::= expr1 "<"  expr1 
+		            | expr1 "=="  expr1 ; //others
+	              | TRUE | FALSE;
+	 * expr  ::= expr1 | boolExpr;
+	 * expr1 ::= term | expr1 "+" term | expr1 "-" term | boolExpr;
+	 * term ::= factor | term "*" factor | term "/" factor ; 
+	 * factor ::= vblRef | number | floatnumber | "(" expr ")";
+	 * vblRef ::= identifier;
+	 * type = "float" | "int " | "boolean"
+	 */
+
+  // trace output controls
+ public static final boolean traceProd = false;
+ public static final boolean showResult = false;
+:}
+
+
+terminal SEMI, PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN, LCURLY, RCURLY;
+terminal PRINT, FLOAT, INT, ASSIGN, FINAL;
+terminal BOOLEAN, TRUE, FALSE, RETURN;
+terminal EQUAL, LESS, GREATER, IF, WHILE;
+terminal String	 NUMBER, FLOATNUMBER;
+terminal String  IDENT;
+
+non terminal Node stmtList, stmt, printStmt, declStmt, assignStmt, ifThenStmt, whileStmt, funcDeclStmt, callStmt, returnStmt;
+non terminal Node expr, expr1, term, factor, vblRef, boolExpr, callExpr;
+non terminal Node type;
+start with stmtList;
+
+stmtList  ::= stmt:s
+ 	    {:
+		StmtList sl = new StmtList();
+		sl.add((StmtNode) s);
+		RESULT = sl;
+	  if (Parser.traceProd) 
+		{
+		     String trace= "stmtList ::= stmt";
+		     if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		     System.out.println(trace);
+		}
+	    :}
+
+	  |   stmtList:sl stmt:s
+	    {:
+		((StmtList)sl).add((StmtNode)s);
+		RESULT = sl;
+		if (Parser.traceProd)
+		{
+			String trace= "stmtlist ::= stmtlist | stmt";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+	  ;
+
+stmt	  ::= printStmt:ps
+ 	    {:
+        RESULT = ps;
+		    if (Parser.traceProd)
+		  {
+			  String trace= "stmt ::= printStmt SEMI";
+			  if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			  System.out.println(trace);
+		  }
+	    :}
+      | declStmt:ds
+    {:
+        RESULT = ds;
+	 	    if (Parser.traceProd)
+		  {
+			  String trace= "stmt ::= declStmt SEMI";
+			  if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			  System.out.println(trace);
+      }
+    :}
+      | assignStmt:as
+    {:
+        RESULT = as;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= assignStmt SEMI";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+      | ifThenStmt:is
+    {:
+        RESULT = is;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= ifThenStmt SEMI";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+      | whileStmt:ws
+    {:
+        RESULT = ws;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= whileStmt SEMI";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+      | funcDeclStmt:fds
+    {:
+        RESULT = fds;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= funcDeclStmt";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+      | callStmt:cs
+    {:
+        RESULT = cs;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= callStmt";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+      | returnStmt:rs
+    {:
+        RESULT = rs;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= returnStmt";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+	  ;
+
+funcDeclStmt  ::= type:t IDENT:ident LPAREN RPAREN LCURLY stmtList:sl RCURLY
+ 	    {:
+        RESULT = new FuncDecl((Type)t, (String)ident, (StmtList) sl);
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "FuncDecl statement";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+
+callExpr  ::= IDENT:id LPAREN RPAREN
+ 	    {:
+        RESULT = new CallExprNode((String)id );
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "callExpr";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+
+callStmt  ::= callExpr:ce SEMI
+ 	    {:
+        RESULT = new CallStmtNode( (CallExprNode)ce );
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "callStmt";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+
+returnStmt  ::= RETURN expr:e SEMI
+ 	    {:
+        RESULT = new ReturnStmtNode( (ExprNode) e);
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "returnStmt ::= return expr";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+      | RETURN SEMI
+    {:
+        RESULT = new ReturnStmtNode();;
+        if(Parser.traceProd) 
+      {
+				String trace= "stmt ::= void returnStmt";
+        if(Parser.showResult) trace = trace + ":    => " + RESULT; 
+        System.out.println(trace);
+      }
+    :}
+	  ;
+
+printStmt  ::= PRINT expr:e SEMI
+ 	    {:
+        RESULT = new PrintStmtNode( (ExprNode) e);
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "printStmt ::= PRINT expr";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+
+declStmt  ::= type:t vblRef:v SEMI
+			{:
+        RESULT = new DeclNode(sym.FLOAT, (VblRefNode) v, (Type) t);
+		if (Parser.traceProd)
+		{
+			String trace= "declStmt ::= FLOAT vblRef";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT.toString();
+			System.out.println(trace);
+		}
+	    :} 
+			   	| type:t vblRef:v ASSIGN expr:e SEMI
+			    {://TODO
+		        RESULT = new DeclNode(sym.INT, (VblRefNode) v, (ExprNode) e, (Type) t);
+		if (Parser.traceProd)
+		{
+			String trace= "declStmt ::= FLOAT vblRef initializer";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT.toString();
+			System.out.println(trace);
+		}
+		:}
+	    		| FINAL declStmt:ds
+	    {:
+        ((DeclNode)ds).finalDecl();
+        RESULT = ds;
+		if (Parser.traceProd)
+		{
+			String trace= "declStmt ::= FINAL declStmt";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT.toString();
+			System.out.println(trace);
+		}
+	    :}
+	  ;
+
+ifThenStmt  ::= IF LPAREN expr:e RPAREN LCURLY stmtList:sl RCURLY
+ 	    {:
+	         
+        RESULT = new ifThenStmtNode( (ExprNode)e, (StmtList)sl );
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "ifThen statement";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+	
+whileStmt  ::= WHILE LPAREN expr:e RPAREN LCURLY stmtList:sl RCURLY
+ 	    {:
+
+        RESULT = new whileStmtNode( (ExprNode)e, (StmtList)sl );
+	    	if (Parser.traceProd)
+		  {
+		  	String trace= "while statement";
+		  	if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		  	System.out.println(trace);
+	  	}
+	    :}
+	  ;
+	
+boolExpr ::= expr1:le LESS expr1:re 
+  {:
+			RESULT = new BoolOpNode(sym.LESS, (ExprNode)le, (ExprNode)re);
+			if (Parser.traceProd)
+			{
+				String trace= "boolOpExpr   ::= boolOpExpr LESS expr";
+				if (Parser.showResult) trace = trace + ":   => " + RESULT;
+				System.out.println(trace);
+			}
+	:}
+	         | expr1:le GREATER expr1:re
+	{:
+			RESULT = new BoolOpNode(sym.GREATER, (ExprNode)le, (ExprNode)re);
+			if (Parser.traceProd)
+			{
+				String trace= "boolOpExpr   ::= boolOpExpr GREATER expr";
+				if (Parser.showResult) trace = trace + ":   => " + RESULT;
+				System.out.println(trace);
+		  }
+	:}
+	         | expr1:le EQUAL expr1:re
+	{:
+			RESULT = new BoolOpNode(sym.EQUAL, (ExprNode)le, (ExprNode)re);
+			if (Parser.traceProd)
+			{
+				String trace= "boolOpExpr   ::= boolOpExpr EQUAL expr";
+				if (Parser.showResult) trace = trace + ":   => " + RESULT;
+				System.out.println(trace);
+		  }
+	:}
+	          | TRUE
+	  {:
+	  RESULT = new BoolLiteralNode(sym.TRUE);
+	if (Parser.traceProd)
+	{
+		String trace= "expr   ::= TRUE  ";
+		if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		System.out.println(trace);
+	}
+	  :}
+	          | FALSE
+	  {:
+	  RESULT = new BoolLiteralNode(sym.FALSE);
+	if (Parser.traceProd)
+	{
+		String trace= "expr   ::= FALSE  ";
+		if (Parser.showResult) trace = trace + ":   => " + RESULT;
+		System.out.println(trace);
+	}
+	  :}
+	;
+	
+assignStmt ::= vblRef:v ASSIGN expr:e SEMI
+			{:
+        RESULT = new AssignStmtNode( (VblRefNode)v, (ExprNode)e);
+        if (Parser.traceProd)
+       {
+				String trace= "assignStmt ::= varible ASSIGN expr";
+        if (Parser.showResult) trace = trace + ":  => " + RESULT;
+        System.out.println(trace);
+       }
+      :}
+      ;
+
+expr      ::= expr1:e1
+	    {:
+	        RESULT = e1;
+		if (Parser.traceProd)
+		{
+			String trace= "expr   ::= expr PLUS term";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+            | boolExpr:be
+	    {:
+		 RESULT = be;
+		if (Parser.traceProd)
+		{
+			String trace= "expr   ::= boolExpr  ";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+			:}
+    ;
+
+
+expr1      ::= expr1:e1 PLUS term:t
+	    {:
+	        RESULT = new BinOpNode( sym.PLUS, (ExprNode) e1, (ExprNode) t);
+		if (Parser.traceProd)
+		{
+			String trace= "expr   ::= expr PLUS term";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+
+            | expr1:e1 MINUS term:t
+	    {:
+ 	         RESULT = new BinOpNode( sym.MINUS, (ExprNode) e1, (ExprNode) t);
+		if (Parser.traceProd)
+		{
+			String trace= "expr   ::= expr MINUS term";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+            | term:t
+	    {:
+		 RESULT = t;
+		if (Parser.traceProd)
+		{
+			String trace= "expr   ::= term  ";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+			:}
+    ;
+
+
+term      ::= term:t TIMES factor:f
+            {: 
+	         RESULT = new BinOpNode(sym.TIMES, (ExprNode) t, (ExprNode) f);
+		if (Parser.traceProd)
+		{
+			String trace= "term   ::= term TIMES  factor";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+            :}
+
+            | term:t DIVIDE factor:f
+            {: 
+	         RESULT =  new BinOpNode(sym.DIVIDE, (ExprNode) t, (ExprNode) f);
+		if (Parser.traceProd)
+		{
+			String trace= "term   ::= term DIVIDE  factor";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+            :}
+
+            | factor:f
+  	    {: 
+		 RESULT = f;
+		if (Parser.traceProd)
+		{
+			String trace= "term   ::= factor";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+	     :}
+            ;
+
+factor    ::= NUMBER:num
+	    {: 
+	        RESULT = new IntLiteralNode(num);
+		if (Parser.traceProd)
+		{
+			String trace= "factor ::= number";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+      :}
+
+      | FLOATNUMBER:fnum
+     {: 
+	        RESULT = new FloatLiteralNode(fnum);
+		if (Parser.traceProd)
+		{
+			String trace= "factor ::= float";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+     :} 
+
+	    | vblRef:v
+	    {:
+	       RESULT = v;
+		if (Parser.traceProd)
+		{
+			String trace= "factor ::= vblRef";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+            :}
+
+	    | LPAREN expr:e RPAREN
+	    {:
+		    RESULT = e;
+		if (Parser.traceProd)
+		{
+			String trace= "factor ::= ( expr ) ";
+			if (Parser.showResult) trace = trace + ":   => " + RESULT;
+			System.out.println(trace);
+		}
+            :}
+            ;	  
+
+
+vblRef ::= IDENT:id
+ 	    {:
+	        RESULT = new VblRefNode(id);
+		if (Parser.traceProd)
+		{
+			String trace= "vblRef ::= IDENT";
+			if (Parser.showResult) trace = trace + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+	     ;
+	
+type ::= FLOAT
+ 	    {:
+	        RESULT = Type.typeFloat;
+		if (Parser.traceProd)
+		{
+			String trace= "type ::= FLOAT";
+			if (Parser.showResult) trace = trace + RESULT;
+			System.out.println(trace);
+		}
+	    :}
+	     | INT
+	    {:
+        RESULT = Type.typeInt;
+		if (Parser.traceProd)
+		{
+			String trace= "type ::= INT";
+			if (Parser.showResult) trace = trace + RESULT;
+			System.out.println(trace);
+		}
+    :}
+	     | BOOLEAN
+	    {:
+        RESULT = Type.typeBool;
+		if (Parser.traceProd)
+		{
+			String trace= "type ::= BOOLEAN";
+			if (Parser.showResult) trace = trace + RESULT;
+			System.out.println(trace);
+		}
+    :}
+;

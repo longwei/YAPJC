@@ -1,0 +1,192 @@
+  Scan: keyword 'print'
+  Scan: NUMBER 1
+  Scan: ';'
+Creating IntLiteralNode: 1
+  Scan: keyword 'int'
+Creating PrintStmtNode: 1
+Stmtlist is created!
+
+add a stmt < print 1 > 
+
+  Scan: IDENT bar
+Begin to Create IntType: 
+Begin to Create FloatType: 
+Begin to Create BoolType: 
+  Scan: '('
+  Scan: ')'
+  Scan: '{'
+  Scan: keyword 'print'
+  Scan: NUMBER 3
+  Scan: ';'
+Creating IntLiteralNode: 3
+  Scan: '}'
+Creating PrintStmtNode: 3
+Stmtlist is created!
+
+add a stmt < print 3 > 
+
+  Scan: keyword 'print'
+Creating allocator
+
+Creating empty NameScope
+
+Creating allocator
+
+Creating FuncBodyNameScope: bar
+
+Creating FuncDecl < bar >
+
+add a stmt bar 
+
+  Scan: NUMBER 2
+  Scan: ';'
+Creating IntLiteralNode: 2
+  Scan: IDENT bar
+Creating PrintStmtNode: 2
+add a stmt < print 2 > 
+
+  Scan: '('
+  Scan: ')'
+  Scan: ';'
+Creating CallExprNode: bar
+  Scan: keyword 'print'
+Creating Declnode < bar >
+
+add a stmt bar 
+
+  Scan: NUMBER 4
+  Scan: ';'
+Creating IntLiteralNode: 4
+Creating PrintStmtNode: 4
+add a stmt < print 4 > 
+
+Result of Parse: cs665.StmtList@721cdeff
+Creating allocator
+
+Creating NameScope: main
+
+Begin analyze ----------- 
+StmtList analyzing
+Analyzing IntLiteralNode: 1
+analyzing PrintStmt...int
+FuncDecl Analyzing...
+bar is a children of main
+main function bar enteredF
+StmtList analyzing
+Analyzing IntLiteralNode: 3
+analyzing PrintStmt...int
+Analyzing IntLiteralNode: 2
+analyzing PrintStmt...int
+CallStmtNode Analyzing...
+analyzing CallExprNode(default int)bar
+lookupF function bar ...
+CallExprNode Analyze a main scope
+find bar
+Analyzing IntLiteralNode: 4
+analyzing PrintStmt...int
+analyze done----------- 
+Begin codeGen ----------- 
+new special reg rVal
+new special reg rFP
+new special reg rSP
+new special reg rRA
+ new Inst: LOADI  16 => rFP    into [0]
+ new Inst: LOADI  272 => rSP    into [1]
+ new Inst: NOP    into [2]
+PrintStmtNode: CodenGen 
+IntLiteralNode: CodeGen
+ new Inst: LOADI  1 => r16    into [3]
+ new Inst: OUTPUTR r16    into [4]
+FuncDecl codeGen...
+ new Inst: BR    into [5]
+ new Inst: STOREAI rFP => (rSP), 0        // save callers FP    into [6]
+ new Inst: I2I rSP => rFP    into [7]
+ new Inst: STOREAI rRA => (rFP), 4        // RA    into [8]
+ new Inst: ADDI rSP,  8 => rSP    into [9]
+PrintStmtNode: CodenGen 
+IntLiteralNode: CodeGen
+ new Inst: LOADI  3 => r17    into [10]
+ new Inst: OUTPUTR r17    into [11]
+ new Inst: LOADAI (rFP), 4 => rRA        // restore RA    into [12]
+ new Inst: I2I rFP => rSP    into [13]
+ new Inst: LOADAI (rSP), 0 => rFP        // callers FP    into [14]
+ new Inst: RETURN rRA, rVal    into [15]
+Setting target to 16
+PrintStmtNode: CodenGen 
+IntLiteralNode: CodeGen
+ new Inst: LOADI  2 => r18    into [16]
+ new Inst: OUTPUTR r18    into [17]
+CallStmtNode codeGen...
+CallExprNode: codeGen bar
+myfirstInstr: 6
+ new Inst: CALL  6 => rRA        // call bar    into [18]
+PrintStmtNode: CodenGen 
+IntLiteralNode: CodeGen
+ new Inst: LOADI  4 => r19    into [19]
+ new Inst: OUTPUTR r19    into [20]
+ new Inst: STOP    into [21]
+
+AllInstrs:
+ [0] Inst: LOADI  16 => rFP
+ [1] Inst: LOADI  272 => rSP
+ [2] Inst: NOP
+ [3] Inst: LOADI  1 => r16
+ [4] Inst: OUTPUTR r16
+ [5] Inst: BR  16
+ [6] Inst: STOREAI rFP => (rSP), 0        // save callers FP
+ [7] Inst: I2I rSP => rFP
+ [8] Inst: STOREAI rRA => (rFP), 4        // RA
+ [9] Inst: ADDI rSP,  8 => rSP
+ [10] Inst: LOADI  3 => r17
+ [11] Inst: OUTPUTR r17
+ [12] Inst: LOADAI (rFP), 4 => rRA        // restore RA
+ [13] Inst: I2I rFP => rSP
+ [14] Inst: LOADAI (rSP), 0 => rFP        // callers FP
+ [15] Inst: RETURN rRA, rVal
+ [16] Inst: LOADI  2 => r18
+ [17] Inst: OUTPUTR r18
+ [18] Inst: CALL  6 => rRA        // call bar
+ [19] Inst: LOADI  4 => r19
+ [20] Inst: OUTPUTR r19
+ [21] Inst: STOP
+
+Run:
+  Executing[0]: Inst: LOADI  16 => rFP
+  Executing[1]: Inst: LOADI  272 => rSP
+  Executing[2]: Inst: NOP
+  Executing[3]: Inst: LOADI  1 => r16
+  Executing[4]: Inst: OUTPUTR r16
+PRINT:  1
+  Executing[5]: Inst: BR  16
+   setPc to: 16
+  Executing[16]: Inst: LOADI  2 => r18
+  Executing[17]: Inst: OUTPUTR r18
+PRINT:  2
+  Executing[18]: Inst: CALL  6 => rRA        // call bar
+about to call 6 from 18
+   setPc to: 6
+  Executing[6]: Inst: STOREAI rFP => (rSP), 0        // save callers FP
+   mem[272] := 16
+  Executing[7]: Inst: I2I rSP => rFP
+   move 272
+  Executing[8]: Inst: STOREAI rRA => (rFP), 4        // RA
+   mem[276] := 19
+  Executing[9]: Inst: ADDI rSP,  8 => rSP
+  Executing[10]: Inst: LOADI  3 => r17
+  Executing[11]: Inst: OUTPUTR r17
+PRINT:  3
+  Executing[12]: Inst: LOADAI (rFP), 4 => rRA        // restore RA
+   get  19 from mem[276]
+  Executing[13]: Inst: I2I rFP => rSP
+   move 272
+  Executing[14]: Inst: LOADAI (rSP), 0 => rFP        // callers FP
+   get  16 from mem[272]
+  Executing[15]: Inst: RETURN rRA, rVal
+about to return to 19
+   setPc to: 19
+  Executing[19]: Inst: LOADI  4 => r19
+  Executing[20]: Inst: OUTPUTR r19
+PRINT:  4
+  Executing[21]: Inst: STOP
+STOP.
+all done 

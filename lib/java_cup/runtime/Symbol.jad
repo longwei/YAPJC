@@ -1,0 +1,65 @@
+// Decompiled by Jad v1.5.8c. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.geocities.com/kpdus/jad.html
+// Decompiler options: packimports(3) 
+// Source File Name:   Symbol.java
+
+package java_cup.runtime;
+
+
+public class Symbol
+{
+
+    public Symbol(int id, Symbol left, Symbol right, Object o)
+    {
+        this(id, left.left, right.right, o);
+    }
+
+    public Symbol(int id, Symbol left, Symbol right)
+    {
+        this(id, left.left, right.right);
+    }
+
+    public Symbol(int id, int l, int r, Object o)
+    {
+        this(id);
+        left = l;
+        right = r;
+        value = o;
+    }
+
+    public Symbol(int id, Object o)
+    {
+        this(id, -1, -1, o);
+    }
+
+    public Symbol(int id, int l, int r)
+    {
+        this(id, l, r, null);
+    }
+
+    public Symbol(int sym_num)
+    {
+        this(sym_num, -1);
+        left = -1;
+        right = -1;
+    }
+
+    Symbol(int sym_num, int state)
+    {
+        used_by_parser = false;
+        sym = sym_num;
+        parse_state = state;
+    }
+
+    public String toString()
+    {
+        return "#" + sym;
+    }
+
+    public int sym;
+    public int parse_state;
+    boolean used_by_parser;
+    public int left;
+    public int right;
+    public Object value;
+}
