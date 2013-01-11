@@ -1,4 +1,4 @@
-Yet another prototyping Java compiler(sort of).
+Yet another prototyping Java compiler.
 Scanner: Jflex
 Parser: CUP
 Target ISA: RISC
